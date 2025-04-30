@@ -1,3 +1,10 @@
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+SECRET_KEY = 'H9sGWsuhGa3vrEk0IVrulYtoeVGZmWLCdTQED5F_-JjcOvjkiRRvlb79Ru67sdo570U'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -10,9 +17,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'core',
     'users',
-    'products',
-    'orders',
-    'analytics',
+    # 'products',
+    # 'orders',
+    # 'analytics',
 ]
 
 MIDDLEWARE = [
@@ -26,19 +33,39 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'core.authentication.BearerAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-    ],
-}
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+
+    }
 
 CORS_ALLOW_ALL_ORIGINS = True  # Adjust for production
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'e_commerce_api_project.wsgi.application'
 
 DATABASES = {
     'default': {
@@ -51,7 +78,44 @@ DATABASES = {
     }
 }
 
-ALLOWED_HOSTS = ['127.0.0.1']
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+AUTH_USER_MODEL = 'users.User'
+
+ROOT_URLCONF = 'e_commerce_api_project.urls'
+
+DEBUG = True
+SECRET_KEY = 'your-secret-key-here'  # Replace with your actual key
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # For future React.js dashboard
+]
+
+STATIC_URL = '/static/'
+
+STATIC_ROOT = 'e_commerce_api_project/staticfiles'  # For collectstatic in production
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_TZ = True
 
 # Run server on port 8888
 # In PyCharm: Edit Configurations, set port to 8888
