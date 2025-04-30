@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from .models import UserProfile, Role, User, Permission
-from .serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer, AdminUserCreateSerializer, PermissionSerializer
+from .serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer, AdminUserCreateSerializer, PermissionSerializer, RoleSerializer
 from django.db.models import Q
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -94,3 +94,14 @@ class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
         context['view_type'] = self.request.query_params.get('view','list')
         context['depth'] = 0 # Initialize recursion depth
         return context
+    
+class RoleViewSet(viewsets.ModelViewSet):
+    queryset = Role.objects.all().order_by('id')
+    serializer_class = RoleSerializer
+    permission_classes = [IsAdminUser]
+    pagination_class = None
+
+    def destroy(self, request, *args, **kwargs):
+        instance =  self.get_object()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

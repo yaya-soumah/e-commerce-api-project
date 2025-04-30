@@ -27,11 +27,25 @@ class PermissionSerializer(serializers.ModelSerializer):
 
 
 class RoleSerializer(serializers.ModelSerializer):
-    permissions = PermissionSerializer(many=True, read_only=True)
+    permissions = serializers.PrimaryKeyRelatedField(
+        queryset=Permission.objects.all(),
+        many=True,
+        required=False
+    )
 
     class Meta:
         model = Role
         fields = ['id','name','description','permissions']
+
+    def to_representation(self, instance):
+        # Include full permission details in response
+        representation = super().to_representation(instance)
+        representation['permissions'] = PermissionSerializer(
+            instance.permissions.all(),
+            many=True,
+            context={'view_type':'list', 'depth':0}
+        ).data
+        return representation
 
 class UserListSerializer(serializers.ModelSerializer):
     role_name = serializers.CharField(source='profile.role.name', read_only=True, allow_blank=True)
