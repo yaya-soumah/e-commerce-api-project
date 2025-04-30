@@ -11,7 +11,7 @@ class User(AbstractUser):
 
 class Permission(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    level = models.IntegerField(default=0) # Depth (0 to 4)
+    level = models.PositiveIntegerField(default=1) # Depth (1 to 4)
     parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='children')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,7 +37,7 @@ class Role(models.Model):
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    permissions = models.ManyToManyField(Permission, related_name='roles')
+    permissions = models.ManyToManyField(Permission, related_name='roles', blank=True)
 
     def __str__(self):
         return self.name

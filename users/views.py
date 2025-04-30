@@ -1,9 +1,9 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
-from .models import UserProfile, Role, User
-from .serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer, AdminUserCreateSerializer
+from .models import UserProfile, Role, User, Permission
+from .serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer, AdminUserCreateSerializer, PermissionSerializer
 from django.db.models import Q
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -76,3 +76,21 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Permission.objects.all()
+    serializer_class = PermissionSerializer
+    permission_classes = [IsAdminUser]
+    pagination_class = None 
+
+    def get_queryset(self):
+        view_type = self.request.query_params.get('view','list')
+        if view_type == 'list':
+            return Permission.objects.filter(level=1)
+        return Permission.objects.all().order_by('id')
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['view_type'] = self.request.query_params.get('view','list')
+        context['depth'] = 0 # Initialize recursion depth
+        return context
