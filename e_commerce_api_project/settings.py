@@ -98,7 +98,7 @@ AUTH_USER_MODEL = 'users.User'
 ROOT_URLCONF = 'e_commerce_api_project.urls'
 
 DEBUG = True
-SECRET_KEY = 'your-secret-key-here'  # Replace with your actual key
+
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 CORS_ALLOWED_ORIGINS = [

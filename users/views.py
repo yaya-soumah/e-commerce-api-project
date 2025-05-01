@@ -3,7 +3,14 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from .models import UserProfile, Role, User, Permission
-from .serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer, AdminUserCreateSerializer, PermissionSerializer, RoleSerializer
+from .serializers import (UserListSerializer, 
+                          UserCreateSerializer, 
+                          UserDetailSerializer, 
+                          AdminUserCreateSerializer, 
+                          PermissionSerializer, 
+                          RoleSerializer,
+                          UserAssingRoleSerializer
+                          )
 from django.db.models import Q
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -17,6 +24,8 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserCreateSerializer
         if self.action == 'create_admin':
             return AdminUserCreateSerializer
+        if self.action == 'assign-role':
+            return UserAssingRoleSerializer
         return UserDetailSerializer
 
     def list(self,request):
@@ -50,25 +59,22 @@ class UserViewSet(viewsets.ModelViewSet):
             'pagenum': pagenum,
             'users': serializer.data,})
 
+    # soft delete instead of hard delete
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.profile.is_deleted = True
         instance.profile.save()
         return Response({},status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['post'], url_path='role')
-    def update_role(self, request, pk=None):
+    @action(detail=True, methods=['patch'], url_path='assign-role')
+    def assign_role(self, request, pk=None):
         user = self.get_object()
-        role_id = request.data.get('role_id')
+        serializer = UserAssingRoleSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated_user = serializer.save()
+        
+        return Response(serializer.to_representation(updated_user), status=status.HTTP_200_OK)
 
-        try:
-            role = Role.objects.get(id=role_id)
-            user.profile.role = role
-            user.profile.save()
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Role.DoesNotExist:
-            return Response({'error': 'Role not found'}, status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['post'], url_path='admin')
     def create_admin(self, request):
@@ -77,23 +83,32 @@ class UserViewSet(viewsets.ModelViewSet):
         user = serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-class PermissionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Permission.objects.all()
+class PermissionViewSet(viewsets.ModelViewSet):
+    queryset = Permission.objects.all().order_by('id')
     serializer_class = PermissionSerializer
     permission_classes = [IsAdminUser]
     pagination_class = None 
 
     def get_queryset(self):
-        view_type = self.request.query_params.get('view','list')
-        if view_type == 'list':
-            return Permission.objects.filter(level=1)
+        if self.action == 'list':
+            view_type = self.request.query_params.get('view','list')
+            if view_type == 'list':                
+                return Permission.objects.filter(level=1).order_by('id')
         return Permission.objects.all().order_by('id')
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context['view_type'] = self.request.query_params.get('view','list')
+        if self.action == 'list':
+            context['view_type'] = self.request.query_params.get('view','list')
+        else:
+            context['view_type'] = 'tree'
         context['depth'] = 0 # Initialize recursion depth
         return context
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
     
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role.objects.all().order_by('id')
@@ -104,4 +119,4 @@ class RoleViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         instance =  self.get_object()
         instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
