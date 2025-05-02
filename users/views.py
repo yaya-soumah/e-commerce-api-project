@@ -91,19 +91,14 @@ class PermissionViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         if self.action == 'list':
-            view_type = self.request.query_params.get('view','list')
-            if view_type == 'list':                
-                return Permission.objects.filter(level=1).order_by('id')
+            return Permission.objects.filter(level=1).order_by('id')            
         return Permission.objects.all().order_by('id')
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        if self.action == 'list':
-            context['view_type'] = self.request.query_params.get('view','list')
-        else:
-            context['view_type'] = 'tree'
-        context['depth'] = 0 # Initialize recursion depth
-        return context
+        context['view_type'] = 'tree'
+        context['depth'] = 0
+        return context        
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
