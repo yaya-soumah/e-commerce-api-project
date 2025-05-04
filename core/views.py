@@ -14,8 +14,7 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_query_param = 'pagenum'
 
 class LoginViewSet(viewsets.GenericViewSet):
-    serializer_class = LoginSerializer  
-    # authentication_classes = []
+    serializer_class = LoginSerializer 
     permission_classes = [AllowAny]
     
     @action(detail=True, methods=['post'] )
@@ -41,6 +40,10 @@ class CategoryViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
     def get_queryset(self):
+        if self.action in ['reactivate','permanent']:
+            return Category.objects.filter(is_deleted=True).order_by('id')
+        elif self.action == 'deleted':
+            return Category.objects.filter(is_deleted=True).order_by('id')
         queryset = super().get_queryset()
         level = self.request.query_params.get('level')
         if self.action == 'list':
@@ -71,6 +74,55 @@ class CategoryViewSet(viewsets.ModelViewSet):
         mark_deleted(instance)
         
         return Response({}, status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=True, methods=['patch'], url_path='reactivate')
+    def reactivate(self,request, pk=None):
+        instance = self.get_object()
+
+        def reactivate_category(category):
+            serializer = self.get_serializer(category, data={'is_deleted':False}, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            for child in category.children.all():
+                reactivate_category(child)
+        reactivate_category(instance)   
+           
+        return Response(self.get_serializer(instance).data)
+    
+    @action(detail=False, methods=['get'], url_path='deleted')
+    def deleted(self, request):
+        queryset = self.get_queryset()
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset,many=True)
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=['delete'], url_path='permanent')
+    def permanent(self,request, pk=None):
+        instance = self.get_object()
+        if not instance.is_deleted:
+            return Response({"deatil": "Only soft-deleted categories can be permanently deleted."}, status=status.HTTP_400_BAD_REQUEST)
+        instance.delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
+    
+    @action(detail=False, methods=['post'], url_path='permanent/bulk')
+    def permanent_bulk(self,request, pk=None):
+        ids = request.data.get('ids', [])
+        if not ids:
+            return Response({"detail": "No IDs provided."}, status=status.HTTP_400_BAD_REQUEST)
+        categories = Category.objects.filter(id__in=ids, is_deleted=True)
+        if not categories.exists():
+            return Response({"detail":"No soft-deleted categories found for provided IDs."})
+        if len(categories) != len(ids):
+            return Response({"detail":"Some Ids do not correspond to soft-deleted categories."}, status=status.HTTP_400_BAD_REQUEST)
+        categories.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+       
+        
+
+
 
 
 

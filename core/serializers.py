@@ -28,20 +28,22 @@ class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'parent_id', 'level', 'is_deleted',  'children']
-        read_only_fields = ['level','is_deleted']
+        read_only_fields = ['level']
         extra_kwargs = {
-            'name':{'required':False}
+            'name':{'required':False},
+            'is_deleted':{'required':False}
         }
     
     def get_children(self, obj):
-        
-        children = obj.children.filter(is_deleted=False)
-        return CategorySerializer(children, many=True).data
+        is_deleted_filter = self.context.get('view').action == 'deleted' if self.context.get('view') else False
+        children = obj.children.filter(is_deleted=is_deleted_filter)
+        return CategorySerializer(children, many=True, context=self.context).data
     
     def validate(self,data):  
 
         parent_id = data.get('parent_id', self.instance.parent_id if self.instance else None)
         name = data.get('name', self.instance.name if self.instance else None)
+        is_deleted = data.get('is_deleted', True)
 
         # Fetch parent if parent_id is provided
         parent = None
@@ -50,29 +52,33 @@ class CategorySerializer(serializers.ModelSerializer):
                 parent = Category.objects.get(id=parent_id, is_deleted=False)
                 data['parent'] = parent
             except Category.DoesNotExist:
-                raise serializers.ValidationError({"parent_id":"Parent category does not exist."})
+                raise serializers.ValidationError({"parent_id":"Parent category does not exist or is deleted."})
         else:
             data['parent'] = None
 
         level = 1 if parent is None else min(parent.level + 1, 3)
         data['level'] = level
 
-        # Level 1 must have no parent
-        if level == 1 and parent_id is not None:
-            raise serializers.ValidationError({"parent_id":" Level 1 category cannot have a parent."})
-        
-        # Non-level 1 must have a parent
-        if level > 1 and parent_id is None:
-            raise serializers.ValidationError({"parent_id": "Category with level > 1 must have a parent."})
-        
         # Validate parent level
-        if parent and parent.level > level:
+        if parent and parent.level >= level:
             raise serializers.ValidationError({"parent_id":"Parent level must be less than current level."})
         
         # Validate name uniqueness
-        if name and Category.objects.filter(name=name).exclude(id=self.instance.id if self.instance else None).exists():
-            raise serializers.ValidationError({"name":"Category name must be unique."})
-        print(f"validate method data just before return: {str(data)}")
+        if name and not is_deleted and Category.objects.filter(name=name, is_deleted=False).exclude(id=self.instance.id if self.instance else None).exists():
+            raise serializers.ValidationError({"name":"Category name must be unique among active categories."})
+        
+        # Validate reactivation
+        if self.instance and 'is_deleted' in data and not data['is_deleted']:
+            #check parent is not deleted
+            if self.instance.parent and self.instance.parent.is_deleted:
+                raise serializers.ValidationError({"parent_id":"Cannot reactivate: Parent category is deleted."})
+            def check_descendants(category):
+                if not category.is_deleted and Category.objects.filter(name=category.name, is_deleted=False).exclude(id=category.id).exists():
+                    raise serializers.ValidationError({"name":f"Name '{category.name}' conflicts with an active category."})
+                for child in category.children.all():
+                    check_descendants(child)
+            check_descendants(self.instance)
+        print(f"return data of validate method: {str(data)}")    
         return data
     
     def create(self, validated_data):
@@ -82,11 +88,10 @@ class CategorySerializer(serializers.ModelSerializer):
         return Category.objects.create(parent=parent, **validated_data)
     
     def update(self, instance, validated_data):
+        print(f"validate_data: {str(validated_data)}")
         parent = validated_data.pop('parent', None)
-        
-        print(f"initial_data {str(self.initial_data)}")
-        print(f"validated_data {str(validated_data)}")
-        if 'parent' in self.initial_data:
+        print(f"initial_data: {str(self.initial_data)}")
+        if 'parent_id' in self.initial_data:
             instance.parent = parent
         
         for attr, value in validated_data.items():
@@ -94,6 +99,18 @@ class CategorySerializer(serializers.ModelSerializer):
                 setattr(instance, attr, value)
         instance.level= instance.parent.level + 1 if instance.parent else 1
         instance.save()
+
+        # Update descendant levels
+        def update_descendant_levels(category):
+            new_level = min(category.parent.level + 1, 3) if category.parent else 1
+            if category.level != new_level:
+                category.level = new_level
+                category.save()
+            
+            for child in category.children.all():
+                update_descendant_levels(child)
+        for child in instance.children.all():
+            update_descendant_levels(child)
         return instance
 
         
