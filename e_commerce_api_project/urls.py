@@ -1,8 +1,9 @@
-from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/private/v1/',include('core.urls')),
-    path('api/private/v1/',include('users.urls')),
+    path('api/private/v1/auth/login/',include('apps.auth.urls')),
+    path('api/private/v1/permissions/',include('apps.permissions.urls')),
+    path('api/private/v1/roles/',include('apps.roles.urls')),
+    path('api/private/v1/categories/',include('apps.categories.urls')),
+    path('api/private/v1/users/',include('apps.users.urls')),
 ]
