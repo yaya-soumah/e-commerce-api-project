@@ -2,8 +2,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
-# from django.contrib.auth.models import User
-from .models import UserProfile, User
+from .models import User
 from .serializers import UserListSerializer, UserCreateSerializer, UserDetailSerializer, AdminUserCreateSerializer, UserAssingRoleSerializer
 from django.db.models import Q
 

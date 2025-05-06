@@ -13,6 +13,7 @@ class CategoryAttribute(models.Model):
         unique_together = ('cat_id', 'attr_name')
         verbose_name = 'Category Attribute'
         verbose_name_plural = 'Category Attributes'
+        
 
     def __str__(self):
         return f"{self.attr_name} ({self.cat_id.name})"

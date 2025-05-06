@@ -102,10 +102,10 @@ class UserAssingRoleSerializer(serializers.Serializer):
         return data
     
     def update(self, instance, validated_data):
-        print(f"Updating user {instance.username}: role_id={validated_data.get('role_id')}, role_name={validated_data.get('role_name')}")
+        
         role_id = validated_data.get('role_id')
         role_name = validated_data.get('role_name')
-        print(f"Assigning role to user {instance.username}: role_id={role_id}, role_name={role_name}")
+        
         if role_id:
             role = Role.objects.get(id=role_id)
         else:
