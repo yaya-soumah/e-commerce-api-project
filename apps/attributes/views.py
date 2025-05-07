@@ -33,7 +33,10 @@ class CategoryAttributeViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
        
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({
+            "data":serializer.data,
+            "message":"Attribute created successfully"
+        }, status=status.HTTP_201_CREATED)
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
