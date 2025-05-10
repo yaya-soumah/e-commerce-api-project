@@ -24,6 +24,9 @@ INSTALLED_APPS = [
     'apps.attributes.apps.AttributesConfig',
     'apps.roles.apps.RolesConfig',
     'apps.permissions.apps.PermissionsConfig',
+    'apps.products.apps.ProductsConfig',
+    'apps.orders.apps.OrdersConfig',
+    
 ]
 
 MIDDLEWARE = [
@@ -35,7 +38,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'apps.core.middleware.ResponseMiddleware',
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -67,12 +69,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
-    'EXCEPTION_HANDLER':'apps.core.middleware.custom_exception_handler',
+    # 'EXCEPTION_HANDLER':'apps.core.middleware.custom_exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.StandardResultsSetPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
+        # 'rest_framework.renderers.JSONRenderer',
+        'apps.core.renderers.APIJSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
+        
     ],
     }
 

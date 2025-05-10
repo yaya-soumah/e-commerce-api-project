@@ -3,10 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser
 from .models import Permission
-from .serializers import ( 
-                          PermissionSerializer, 
-                          
-                          )
+from .serializers import PermissionSerializer
+
 class PermissionViewSet(viewsets.ModelViewSet):
     queryset = Permission.objects.all().order_by('id')
     serializer_class = PermissionSerializer

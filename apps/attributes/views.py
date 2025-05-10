@@ -32,9 +32,9 @@ class CategoryAttributeViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-       
+        data=serializer.data
         return Response({
-            "data":serializer.data,
+            "data":data,
             "message":"Attribute created successfully"
         }, status=status.HTTP_201_CREATED)
     

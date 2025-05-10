@@ -14,7 +14,6 @@ class CategoryAttributeSerializer(serializers.ModelSerializer):
             'attr_write':{'required':False}     
 
         }
-        
 
     def validate(self, data):
         
