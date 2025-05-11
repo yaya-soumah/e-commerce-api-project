@@ -29,14 +29,14 @@ class APIJSONRenderer(JSONRenderer):
             status_code == status.HTTP_201_CREATED or \
             status_code == status.HTTP_204_NO_CONTENT:
             formatted_data["message"] = "Operation successful"      
-
+        
         if isinstance(data,dict):
             if "message" in data:
                 formatted_data["message"]=data.pop("message") 
                 data = data.pop("data", None)
                 formatted_data["data"] = data                
 
-            if "count" in data:
+            if  "count" in data:
                 pagesize = request.GET.get("pagesize", 10)
                 formatted_data["meta"] = {
                 "count": data.get("count", None),
@@ -54,7 +54,7 @@ class APIJSONRenderer(JSONRenderer):
                  
         
         # Handle detail messages (e.g., authentication errors)
-            if "detail" in data:
+            if  "detail" in data:
                 formatted_data["message"] = data.pop("detail", None)
                 if formatted_data["status"] == "success":
                     formatted_data["data"] = data

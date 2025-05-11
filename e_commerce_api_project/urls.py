@@ -11,4 +11,5 @@ urlpatterns = [
     path('api/private/v1/upload/', UploadView.as_view(), name='upload'),
     path('api/private/v1/users/',include('apps.users.urls')),
     path('api/private/v1/orders/',include('apps.orders.urls')),
+    path('api/private/v1/reports/',include('apps.analytics.urls')),
 ]

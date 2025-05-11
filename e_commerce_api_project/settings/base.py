@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'apps.permissions.apps.PermissionsConfig',
     'apps.products.apps.ProductsConfig',
     'apps.orders.apps.OrdersConfig',
+    'apps.analytics.apps.AnalyticsConfig',
     
 ]
 
