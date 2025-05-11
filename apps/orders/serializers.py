@@ -3,7 +3,6 @@ from .models import Order, OrderItem, ShippingTracking
 from apps.products.models import Product
 from apps.products.serializers import ProductSerializer
 from django.db import transaction
-# from django.conf import settings
 from apps.users.models import User
 
 class OrderItemSerializer(serializers.ModelSerializer):

@@ -103,17 +103,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'e_commerce_api_project.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
-    }
-}
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -150,9 +139,40 @@ USE_TZ = True
 from datetime import timedelta
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+# Cacheops configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
+CACHEOPS_REDIS = 'redis://127.0.0.1:6379/1'
+CACHEOPS = {
+    'orders.*': {'ops': 'all', 'timeout': 60*60},  # Cache Order, OrderItem for 1 hour
+    'products.*': {'ops': 'all', 'timeout': 60*60},
+    'analytics.*': {'ops': 'all', 'timeout': 60*60},
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,  # Disable session auth
+    'LOGIN_URL': None,         # Remove default login
+    'LOGOUT_URL': None,        # Remove default logout
 }
 
 # Run server on port 8888

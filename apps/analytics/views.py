@@ -5,16 +5,16 @@ from rest_framework.response import Response
 from .serializers import SalesReportSerializer, ProductPopularitySerializer, PaymentStatusSerializer
 from django.utils import timezone
 from datetime import timedelta
+from django.views.decorators.cache import cache_page
 
 class ReportViewSet(viewsets.ViewSet):
     permission_classes = [IsAdminUser]
 
     def get_date_range(self, request):
-        # Default end_date to today’s date
+        
         default_end_date = timezone.now().date()
         end_date_str = request.query_params.get('end_date', str(default_end_date))
-        
-        # Parse end_date
+                
         try:
             end_date = timezone.datetime.strptime(end_date_str, '%Y-%m-%d').date()
         except ValueError:
@@ -24,7 +24,6 @@ class ReportViewSet(viewsets.ViewSet):
         default_start_date = end_date - timedelta(days=30)
         start_date_str = request.query_params.get('start_date', str(default_start_date))
         
-        # Parse start_date
         try:
             start_date = timezone.datetime.strptime(start_date_str, '%Y-%m-%d').date()
         except ValueError:

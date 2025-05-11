@@ -35,7 +35,7 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.order_number:
-            self.order_number = f'ORD-{Category.objects.count():06d}'
+            self.order_number = f'ORD-{Category.objects.count():06d}{self.user.id}'
         super().save(*args, **kwargs)
 
     def __str__(self):
