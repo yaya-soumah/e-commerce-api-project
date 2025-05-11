@@ -1,8 +1,14 @@
 from django.urls import path, include
 from apps.products.views import UploadView
+from rest_framework_simplejwt.views import (
+       TokenObtainPairView,
+       TokenRefreshView,
+   )
 
 urlpatterns = [
     path('api/private/v1/auth/login/',include('apps.auth.urls')),
+    path('api/private/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/private/v1/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/private/v1/permissions/',include('apps.permissions.urls')),
     path('api/private/v1/roles/',include('apps.roles.urls')),
     path('api/private/v1/categories/',include('apps.categories.urls')),
