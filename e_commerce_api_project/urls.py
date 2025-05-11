@@ -5,6 +5,8 @@ from rest_framework_simplejwt.views import (
        TokenRefreshView,
    )
 
+from .swagger import schema_view
+
 urlpatterns = [
     path('api/private/v1/auth/login/',include('apps.auth.urls')),
     path('api/private/v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -18,4 +20,7 @@ urlpatterns = [
     path('api/private/v1/users/',include('apps.users.urls')),
     path('api/private/v1/orders/',include('apps.orders.urls')),
     path('api/private/v1/reports/',include('apps.analytics.urls')),
+    # documentation urls
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
