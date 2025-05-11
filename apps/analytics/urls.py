@@ -1,10 +1,9 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
+from django.views.decorators.cache import cache_page
 from .views import ReportViewSet
 
-router = DefaultRouter()
-router.register(r'', ReportViewSet, basename='report')
-
 urlpatterns = [
-    path('', include(router.urls)),
+    path('sales/', cache_page(60 * 60)(ReportViewSet.as_view({'get': 'sales'})), name='sales-report'),
+    path('products/', cache_page(60 * 60)(ReportViewSet.as_view({'get': 'products'})), name='products-report'),
+    path('payment_status/', cache_page(60 * 60)(ReportViewSet.as_view({'get': 'payment_status'})), name='payment-status-report'),
 ]
