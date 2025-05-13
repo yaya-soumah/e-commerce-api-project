@@ -31,7 +31,7 @@ class APIJSONRenderer(JSONRenderer):
             formatted_data["message"] = "Operation successful"      
         
         if isinstance(data,dict):            
-            if  "count" in data:
+            if  "results" in data:
                 pagesize = request.GET.get("pagesize", 10)
                 formatted_data["meta"] = {
                 "count": data.get("count", None),
@@ -46,10 +46,11 @@ class APIJSONRenderer(JSONRenderer):
                 )
                 }            
                 formatted_data["data"] = data.get("results", data)
-            elif "message" in data:
+            elif "data" in data:
+                
                 formatted_data["message"]=data.pop("message","") 
                 formatted_data["meta"]=data.pop("meta",{}) 
-                formatted_data["data"] = data                
+                formatted_data["data"] = data.pop("data")                
      
         
         # Handle detail messages (e.g., authentication errors)

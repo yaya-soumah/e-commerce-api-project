@@ -1,10 +1,13 @@
 from rest_framework import serializers
-from django.db.models import Sum, Count, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, Count, F, Q, ExpressionWrapper, DecimalField
 from django.utils import timezone
 from apps.orders.models import Order, OrderItem
 from apps.products.models import Product
 from datetime import timedelta
 from django.db.models.functions import TruncDate
+import dateutil.parser
+from apps.categories.models import Category
+from django.db.models.functions import Coalesce
 
 class SalesReportSerializer(serializers.Serializer):
     date = serializers.DateField()
@@ -86,3 +89,33 @@ class PaymentStatusSerializer(serializers.Serializer):
             'order_count': instance['order_count'],
             'percentage': round(instance['percentage'], 2)
         }
+
+class ProductCategoryReportSerializer(serializers.Serializer):
+    category_id = serializers.IntegerField()
+    category_name = serializers.CharField()
+    total_sales = serializers.DecimalField(max_digits=10, decimal_places=2)
+    order_count = serializers.IntegerField()
+
+    def get_queryset(self, start_date, end_date):       
+        return Category.objects.filter(
+            is_deleted=False,
+            products__order_items__order__created_at__gte=start_date,
+            products__order_items__order__created_at__lte=end_date
+
+            ).annotate(
+                
+            category_id=F('id'),
+            category_name=F('name'),
+            total_sales=Sum(F('products__order_items__unit_price') * F('products__order_items__quantity')),
+            order_count=Count('products__order_items__order', distinct=True),
+            product_count=Count('products',distinct=True,filter=Q(products__is_deleted=False)),
+            total_quantity=Sum('products__order_items__quantity')            
+            ).values(
+            'category_id',
+            'category_name',
+            'total_sales',
+            'order_count',
+            'product_count',
+            'total_quantity'
+        ).order_by('-total_sales')
+

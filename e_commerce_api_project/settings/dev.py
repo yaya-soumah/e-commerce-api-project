@@ -1,6 +1,8 @@
 from .base import *
+import sys
 
 from decouple import config
+
 
 DATABASES = {
     'default': {
@@ -12,6 +14,12 @@ DATABASES = {
         'PORT': config('DB_PORT'),
     }
 }
+
+if 'test' in sys.argv:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': ':memory:',
+    }
 
 CORS_ALLOW_ALL_ORIGINS = True
 

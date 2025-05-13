@@ -198,6 +198,12 @@ Payment status report
 start_date, end_date
 
 
+/api/private/v1/reports/categories/
+GET
+Category sales report
+start_date, end_date
+
+
 Example Request
 Get Permissions tree view:
 curl -X 'GET' \
