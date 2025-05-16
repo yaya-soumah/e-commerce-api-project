@@ -41,6 +41,7 @@ class CategoryAttributeSerializer(serializers.ModelSerializer):
         # Validate attr_vals
         if attr_write == 'list' and not attr_vals:
             raise serializers.ValidationError({"attr_vals": "Must provide values for 'list' write type."})
+        
         if attr_write == 'manual' and attr_vals:
             raise serializers.ValidationError({"attr_vals": "Cannot provide values for 'manual' write type."})
 

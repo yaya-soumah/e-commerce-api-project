@@ -19,8 +19,3 @@ class LoginSerializer(serializers.ModelSerializer):
         from rest_framework.authtoken.models import Token
         token, _ = Token.objects.get_or_create(user=obj)
         return f"Bearer {token}"
-
-
-
-        
-    

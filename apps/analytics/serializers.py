@@ -1,13 +1,8 @@
 from rest_framework import serializers
 from django.db.models import Sum, Count, F, Q, ExpressionWrapper, DecimalField
-from django.utils import timezone
 from apps.orders.models import Order, OrderItem
-from apps.products.models import Product
-from datetime import timedelta
 from django.db.models.functions import TruncDate
-import dateutil.parser
 from apps.categories.models import Category
-from django.db.models.functions import Coalesce
 
 class SalesReportSerializer(serializers.Serializer):
     date = serializers.DateField()
@@ -108,7 +103,7 @@ class ProductCategoryReportSerializer(serializers.Serializer):
             category_name=F('name'),
             total_sales=Sum(F('products__order_items__unit_price') * F('products__order_items__quantity')),
             order_count=Count('products__order_items__order', distinct=True),
-            product_count=Count('products',distinct=True,filter=Q(products__is_deleted=False)),
+            product_count=Count('products',distinct=True, filter=Q(products__is_deleted=False)),
             total_quantity=Sum('products__order_items__quantity')            
             ).values(
             'category_id',
