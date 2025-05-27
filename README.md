@@ -162,6 +162,7 @@ pytest apps/ --cov=apps/ --cov-report=html
 
 ## Contact
 **GitHub**: yaya-soumah
+
 **Email**: yaya-soumah@outlook.com
 
 ## License
