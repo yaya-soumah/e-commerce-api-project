@@ -19,6 +19,7 @@ Built to showscase of clean DRF architecture, secure, role_based access control,
 - Factory Boy
 
 ## Project Structure(Simplified)
+```
 e-commerce-api-project/
 ├── apps/ #Modular Django apps(users,orders,analytics,etc.)
 ├── e_commerce_api_project/
@@ -27,7 +28,7 @@ e-commerce-api-project/
 ├── .env
 ├── manage.py
 ├── requirements.txt
-
+```
 
 ## Setup Instructions
 ### 1. Clone the repo:
