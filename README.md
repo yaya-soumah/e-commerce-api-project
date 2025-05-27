@@ -1,6 +1,6 @@
 # E-commerce API — DRF Backend for Modern Webshops
 
-A robust and modular **Django REST Framework API** for managing e-commerce platforms. Built with scalability, role-based access control, and analytics in mind. 
+A robust and modular **Django REST Framework API** for managing e-commerce platforms. 
 Built to showscase of clean DRF architecture, secure, role_based access control, production-quality test practices and real-world API features and analytics.
 
 ## Features includes:
