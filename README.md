@@ -75,8 +75,11 @@ python manage.py runserver 8888
 ## Usage
 
 BASE URL: `http://127.0.0.1:8888/api/private/v1/`
+
 Authentication: All endpoints require JWT authentication. Include header: `Authorization:Bearer <token>`. 
+
 Swagger Docs: explore API at `http://127.0.0.1:8888/swagger/`
+
 Example: Permission Tree view
 ```
 curl -X 'GET' \
